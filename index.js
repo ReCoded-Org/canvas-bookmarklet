@@ -1,6 +1,53 @@
+const state = {
+  isLoading: true,
+};
+
+const gridCanvas = null;
+
+function setData() {
+  if (gridCanvas === null) {
+    throw new Error("Grid Canvas is null");
+  }
+
+  const elems = gridCanvas.querySelectorAll("div.student-name a");
+
+  if (state.isLoading) {
+    const spinner = document.createElement("img");
+    spinner.src = "https://c.tenor.com/I6kN-6X7nhAAAAAj/loading-buffering.gif";
+    spinner.alt = "Loading data";
+    spinner.style.width = "15px";
+    spinner.style.height = "15px";
+    spinner.style.margin = "5px 2px 0 0";
+    elems.forEach((e) => {
+      if (!e.dataset["isBound"] || e.children.length === 0) {
+        e.dataset["isBound"] = true;
+        e.prepend(spinner);
+      }
+    });
+  } else {
+    elems.forEach((e) => {
+      let uid = e.dataset["student_id"];
+      let subs = window.uid2subs[uid];
+      if (!e.dataset["isBound"] || e.children.length === 0) {
+        let span = document.createElement("span");
+        span.innerText = `[${subs}] `;
+        e.dataset["isBound"] = true;
+        e.prepend(span);
+      }
+    });
+  }
+}
+
+function runOnLoad() {
+  if (!Array.isArray(window.submissions)) {
+    throw new Error("Submissions were not fetched!");
+  }
+  state.isLoading = false;
+}
+
 (function () {
   let courseId = checkAndGetCourseID();
-
+  initAndBindListeners();
   fetch(`https://my.learn.co/courses/${courseId}/gradebook/user_ids`)
     .then((r) => r.json())
     .then((data) => {
@@ -15,16 +62,22 @@
         })
         .then((uids) => {
           fetchSubmissions(uids).then((subs) => {
-            window.submissions = submissions;
+            window.submissions = subs;
+            let uidToSubs = {};
+            subs.forEach((s) => {
+              if (!uidToSubs[s.user_id]) {
+                uidToSubs[s.user_id] = 1;
+              } else {
+                uidToSubs[s.user_id] += 1;
+              }
+            });
+
+            window.uid2subs = uidToSubs;
             runOnLoad();
           });
         });
     });
 })();
-
-function runOnLoad() {
-  console.log(window.submissions);
-}
 
 async function fetchSubmissions(uids) {
   let url = "https://my.learn.co/api/v1/courses/146/students/submissions";
@@ -125,4 +178,22 @@ function checkAndGetCourseID() {
   }
 
   return courseId;
+}
+
+function initAndBindListeners() {
+  gridCanvas = document.querySelector("div.canvas_0.grid-canvas");
+  gridCanvas.addEventListener("DOMSubtreeModified", debounce(setData));
+  setData();
+}
+
+function debounce(cb) {
+  let debounceTimer;
+  return function () {
+    const context = this;
+    const args = arguments;
+    clearTimeout(debounceTimer);
+    if (debounceTimer)
+      debounceTimer = setTimeout(() => cb.apply(context, args), 500);
+    else setTimeout(() => cb.apply(context, args), 0);
+  };
 }

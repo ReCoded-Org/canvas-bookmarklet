@@ -67,11 +67,9 @@ function runOnLoad() {
             window.submissions = subs;
             let uidToSubs = {};
             subs.forEach((s) => {
-              if (!uidToSubs[s.user_id]) {
-                uidToSubs[s.user_id] = 1;
-              } else {
-                uidToSubs[s.user_id] += 1;
-              }
+              uidToSubs[s.user_id] = s.submissions.filter(
+                (ee) => ee.workflow_state === "submitted"
+              ).length;
             });
 
             window.uid2subs = uidToSubs;

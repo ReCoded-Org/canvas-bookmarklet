@@ -15,6 +15,7 @@ function setData() {
     const spinner = document.createElement("img");
     spinner.src = "https://c.tenor.com/I6kN-6X7nhAAAAAj/loading-buffering.gif";
     spinner.alt = "Loading data";
+    spinner.className = "img-loader-w";
     spinner.style.width = "15px";
     spinner.style.height = "15px";
     spinner.style.margin = "5px 2px 0 0";
@@ -43,6 +44,7 @@ function runOnLoad() {
     throw new Error("Submissions were not fetched!");
   }
   state.isLoading = false;
+  document.querySelectorAll(".img-loader-w").forEach((e) => e.remove());
 }
 
 (function () {

@@ -2,7 +2,7 @@ const state = {
   isLoading: true,
 };
 
-const gridCanvas = null;
+let gridCanvas = null;
 
 function setData() {
   if (gridCanvas === null) {

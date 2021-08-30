@@ -1,5 +1,6 @@
 const state = {
   isLoading: true,
+  courseId: null,
 };
 
 let gridCanvas = null;
@@ -49,6 +50,7 @@ function runOnLoad() {
 
 (function () {
   let courseId = checkAndGetCourseID();
+  state.courseId = courseId;
   initAndBindListeners();
   fetch(`https://my.learn.co/courses/${courseId}/gradebook/user_ids`)
     .then((r) => r.json())
@@ -80,7 +82,7 @@ function runOnLoad() {
 })();
 
 async function fetchSubmissions(uids) {
-  let url = "https://my.learn.co/api/v1/courses/146/students/submissions";
+  let url = `https://my.learn.co/api/v1/courses/${state.courseId}/students/submissions`;
   const params = {
     exclude_response_fields: ["preview_url"],
     grouped: 1,
@@ -146,7 +148,7 @@ function paramsToURL(params) {
 }
 
 function fetchStudents(uids) {
-  let url = "https://my.learn.co/api/v1/courses/146/users";
+  let url = `https://my.learn.co/api/v1/courses/${state.courseId}/users`;
   const params = {
     enrollment_state: ["active", "completed", "inactive", "invited"],
     enrollment_type: ["student", "student_view"],
